@@ -1,0 +1,7 @@
+---
+
+group:
+  people:
+    name: People
+    entities:
+      - person.timur

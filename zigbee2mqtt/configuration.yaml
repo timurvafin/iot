@@ -1,0 +1,100 @@
+homeassistant: true
+permit_join: false
+mqtt:
+  base_topic: zigbee2mqtt
+  server: mqtt://mosquitto
+serial:
+  port: /dev/ttyUSB0
+  adapter: zstack
+frontend:
+  port: 8381
+advanced:
+  log_level: debug
+  channel: 25
+  pan_id: 6755
+  ikea_ota_use_test_url: false
+  log_syslog:
+    app_name: Zigbee2MQTT
+    eol: /n
+    host: localhost
+    localhost: localhost
+    path: /dev/log
+    pid: process.pid
+    port: 123
+    protocol: tcp4
+    type: '5424'
+  last_seen: ISO_8601_local
+availability: true
+external_converters:
+  - ptvo_switch_3ch.js
+devices:
+  '0x84fd27fffe3e1f71':
+    friendly_name: '0x84fd27fffe3e1f71'
+  '0x84fd27fffe3b2b3a':
+    friendly_name: garden.bbq.light-1
+  '0x00158d000444d94c':
+    friendly_name: garden.front.light-1
+  '0x54ef441000124456':
+    friendly_name: house.terrasse.light-1
+  '0x54ef4410001243d6':
+    friendly_name: house.terrasse.light-2
+  '0x00158d000427fd07':
+    friendly_name: house.livingroom.light-1
+  '0x54ef441000126255':
+    friendly_name: house.corridor.light-1
+  '0x54ef44100015a18b':
+    friendly_name: house.restroom.light-1
+  '0x54ef441000124f64':
+    friendly_name: house.laundry.light-1
+  '0x54ef4410001245bf':
+    friendly_name: house.childrens.light-1
+  '0x54ef4410001263f0':
+    friendly_name: house.bedroom.light-3
+  '0x54ef441000124625':
+    friendly_name: house.guestroom.light-1
+  '0x54ef441000125eda':
+    friendly_name: house.bedroom.light-2
+  '0x54ef441000125277':
+    friendly_name: house.bathroom.light-2
+  '0x54ef441000125965':
+    friendly_name: house.bedroom.light-1
+  '0x00158d000484d09f':
+    friendly_name: house.bathroom.sensor
+    occupancy_timeout: 5
+  '0x00158d0007c2940b':
+    friendly_name: house.kitchen.light-1
+  '0x04cf8cdf3c77576c':
+    friendly_name: '0x04cf8cdf3c77576c'
+  '0x54ef4410007fc978':
+    friendly_name: garden.front.light-2
+  '0x54ef4410001de33f':
+    friendly_name: house.bathroom.light-1
+  '0x54ef4410007fcaa7':
+    friendly_name: house.hall.light-1
+  '0x54ef4410007fc98a':
+    friendly_name: house.shed.light-1
+  '0x54ef4410007fcc67':
+    friendly_name: garden.tree.light-1
+  '0x54ef4410007fc91a':
+    friendly_name: garden.back.light-2
+  '0x54ef4410007fc972':
+    friendly_name: garden.back.light-1
+  '0x54ef4410007fc937':
+    friendly_name: garden.bulb.light-2
+  '0x54ef4410007fcd1d':
+    friendly_name: garden.tree.light-3
+  '0x54ef4410007fca36':
+    friendly_name: garden.tree.light-2
+  '0x54ef4410001de364':
+    friendly_name: house.shed.light-2
+  '0x54ef4410001de302':
+    friendly_name: house.boilerroom.light-1
+  '0x00158d000451f6ba':
+    friendly_name: house.hall.sensor
+  '0x54ef4410001de361':
+    friendly_name: '0x54ef4410001de361'
+experimental:
+  transmit_power: null
+groups:
+  '1':
+    friendly_name: bedroom_lights

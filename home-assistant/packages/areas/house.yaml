@@ -1,0 +1,237 @@
+---
+
+
+light:
+
+  - platform: switch
+    name: Hall Light
+    entity_id: switch.house_hall_light_1
+
+  - platform: switch
+    name: Corridor Light
+    entity_id: switch.house_corridor_light_1
+
+  - platform: switch
+    name: Restroom Light
+    entity_id: switch.house_restroom_light_1
+
+  - platform: switch
+    name: Kitchen Light
+    entity_id: switch.house_kitchen_light_1_l2
+
+  - platform: switch
+    name: Diningroom Light
+    entity_id: switch.house_kitchen_light_1_l1
+
+  - platform: switch
+    name: Laundry Light
+    entity_id: switch.house_laundry_light_1
+
+  - platform: switch
+    name: Childrens Light
+    entity_id: switch.house_childrens_light_1
+
+  - platform: switch
+    name: Guestroom Light
+    entity_id: switch.house_guestroom_light_1
+
+  - platform: group
+    name: "House All Lights"
+    unique_id: house_all_lights
+    entities:
+      - light.hall_light
+      - light.corridor_light
+      - light.restroom_light
+      - light.kitchen_light
+      - light.diningroom_light
+      - light.laundry_light
+      - light.childrens_light
+      - light.guestroom_light
+      - light.boilerroom_light
+      - light.livingroom_all_lights
+      - light.bathroom_all_lights
+      - light.bedroom_all_lights
+      - light.terrasse_all_lights
+      - light.shed_all_lights
+
+
+script:
+
+  coming_home:
+    alias: "Coming Home"
+    sequence:
+      - service: script.turn_on_lights_after_sunsent
+        data: 
+          entity_id:
+            - light.shed_all_lights
+            - light.terrasse_all_lights
+            - light.hall_light
+            - light.livingroom_light_1
+            - light.kitchen_light
+
+      - service: script.play_music
+
+
+  leaving_home:
+    alias: "Leaving Home"
+    sequence:
+      - service: light.turn_off
+        entity_id: light.house_all_lights
+          
+      - service: script.pause_music
+
+
+  going_to_leave_home:
+    alias: "Going to Leave Home"
+    sequence:
+      - service: media_player.play_media
+        entity_id: media_player.yandex_station_940050344110281f098b
+        data:
+          media_content_id: 'Хорошо, расскажу про погоду'
+          media_content_type: text  
+
+      - delay: 3
+
+      - service: media_player.play_media
+        entity_id: media_player.yandex_station_940050344110281f098b
+        data:
+          media_content_id: 'Какая погода в Казани?'
+          media_content_type: command
+
+      - delay: 13          
+
+      - service: media_player.play_media
+        entity_id: media_player.yandex_station_940050344110281f098b
+        data:
+          media_content_id: 'Про дорогу'
+          media_content_type: text  
+
+      - delay: 3                 
+
+      - service: media_player.play_media
+        entity_id: media_player.yandex_station_940050344110281f098b
+        data:
+          media_content_id: 'Сколько ехать на машине до Казани?'
+          media_content_type: command
+
+
+  going_to_sleep:
+    alias: "Going to Sleep"
+    sequence:
+      - service: script.turn_on_lights_after_sunsent
+        data:
+          entity_id:
+            - light.corridor_light
+            - light.bedroom_light_left
+            - light.bedroom_light_right
+
+      - service: light.turn_off
+        target:
+          entity_id:
+            - light.hall_light
+            - light.restroom_light
+            - light.kitchen_light
+            - light.diningroom_light
+            - light.laundry_light
+            - light.boilerroom_light
+            - light.livingroom_all_lights
+            - light.terrasse_all_lights
+            - light.shed_all_lights
+
+      - delay: "00:02"
+
+      - service: light.turn_off
+        target:
+          entity_id:
+            - light.corridor_light
+
+
+input_button:
+
+  house_button_going_to_leave_home:
+    name: Going to Leave Home
+    icon: mdi:home-export-outline
+
+  house_button_leave_home:
+    name: Leave Home
+    icon: mdi:home-export-outline
+
+  house_button_came_home:
+    name: Came Home
+    icon: mdi:home-import-outline
+
+  house_button_going_to_sleep:
+    name: Going to Sleep
+    icon: mdi:chat-sleep-outline
+
+
+automation:
+
+  - id: house_lights_turn_off_presence_off
+    alias: "House Lights – Turn off all lights when nobody at home"
+    trigger:
+      platform: state
+      entity_id: group.people
+      from: "home"
+      to: "not_home"
+      for:
+        minutes: 10
+    action:
+      - service: script.leaving_home
+
+      - service: script.automation_notification
+        data:
+          message: "House Lights: Turned off all lights."
+
+
+  - id: house_action_coming_home
+    alias: "House Action - Coming Home"
+    trigger:
+      - platform: state
+        entity_id: input_button.house_button_came_home
+    action:
+      - service: script.coming_home
+
+      - service: script.automation_notification
+        data:
+          message: "Coming home: Turned on lights and music."
+
+
+  - id: house_action_leaving_home
+    alias: "House Action - Leaving Home"
+    trigger:
+      - platform: state
+        entity_id: input_button.house_button_leave_home
+    action:
+      - service: script.leaving_home
+
+      - service: script.automation_notification
+        data:
+          message: "Leaving home: Turned off lights and music."
+
+
+  - id: house_action_going_to_leave_home
+    alias: "House Action - Going To Leaving Home"
+    trigger:
+      - platform: state
+        entity_id: input_button.house_button_going_to_leave_home
+    action:
+      - service: script.going_to_leave_home
+
+      - service: script.automation_notification
+        data:
+          message: "Going to leave home."
+
+
+  - id: house_action_going_to_sleep
+    alias: "House Action - Going To Sleep"
+    trigger:
+      - platform: state
+        entity_id: input_button.house_button_going_to_sleep
+    action:
+      - service: script.going_to_sleep
+
+      - service: script.automation_notification
+        data:
+          message: "Going to Sleep: Turned on lights."
+

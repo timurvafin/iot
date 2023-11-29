@@ -1,0 +1,252 @@
+version: '3'
+
+services:
+  reverse-proxy:
+    image: traefik:v2.10
+    restart: always
+    command:
+      - --log.level=DEBUG
+      - --api.insecure=true
+      # Tell Traefik to discover containers using the Docker API
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      # Set up an insecure listener that redirects all traffic to TLS
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      # Set up LetsEncrypt
+      - --certificatesresolvers.letsencrypt.acme.dnschallenge=true
+      - --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=dnsimple
+      - --certificatesresolvers.letsencrypt.acme.email=me@timurv.ru
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      # Set up the TLS configuration for our websecure listener
+      - --entrypoints.websecure.http.tls=true
+      - --entrypoints.websecure.http.tls.certresolver=letsencrypt
+      - --entrypoints.websecure.http.tls.domains[0].main=dacha.vafin.ru
+      - --entrypoints.websecure.http.tls.domains[0].sans=*.dacha.vafin.ru
+    environment:
+      - TZ
+      - PUID
+      - PGID
+      - DNSIMPLE_OAUTH_TOKEN
+    ports:
+      - 80:80
+      - 443:443
+      - 81:8080
+    extra_hosts:
+      - host.docker.internal:172.17.0.1
+    volumes:
+      - ./traefik/letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik.rule=Host(`proxy.dacha.vafin.ru`)
+      - traefik.http.routers.traefik.entrypoints=websecure
+      - traefik.http.routers.traefik.tls.certresolver=letsencrypt
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.middlewares=strip
+      - traefik.http.middlewares.strip.stripprefix.prefixes=/traefik
+
+  portainer:
+    image: portainer/portainer-ce
+    restart: always
+    depends_on:
+      - reverse-proxy
+    environment:
+      - TZ
+      - PUID
+      - PGID
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.portainer.entrypoints=websecure
+      - traefik.http.routers.portainer.rule=Host(`portainer.dacha.vafin.ru`)
+      - traefik.http.routers.portainer.tls.certresolver=letsencrypt
+      - traefik.http.services.portainer.loadbalancer.server.port=9000
+
+  home-assistant:
+    image: homeassistant/home-assistant:latest
+    restart: always
+    depends_on:
+      - reverse-proxy
+      - zigbee2mqtt
+    #user: "${PUID}:${PGID}"
+    volumes:
+      - ./home-assistant:/config
+      - /run/dbus:/run/dbus:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - TZ
+      - PUID
+      - PGID
+    network_mode: host
+    privileged: true  
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.home-assistant.entrypoints=websecure
+      - traefik.http.routers.home-assistant.rule=Host(`ha.dacha.vafin.ru`)
+      - traefik.http.routers.home-assistant.tls.certresolver=letsencrypt
+      - traefik.http.services.home-assistant.loadbalancer.server.port=8123
+
+
+  home-assistant-configurator:
+    image: causticlab/hass-configurator-docker:arm64
+    restart: unless-stopped
+    ports:
+      - 3218:3218/tcp
+    volumes:
+      - ./home-assistant-configurator:/config
+      - ./home-assistant:/hass-config
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.home-assistant-configurator.entrypoints=websecure
+      - traefik.http.routers.home-assistant-configurator.rule=Host(`hac.dacha.vafin.ru`)
+      - traefik.http.routers.home-assistant-configurator.tls.certresolver=letsencrypt
+      - traefik.http.services.home-assistant-configurator.loadbalancer.server.port=3218
+
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    restart: always
+    #network_mode: host  
+    volumes:
+      - ./mosquitto:/mosquitto
+    ports:
+      - 1883:1883
+      - 9001:9001
+    environment:
+      - TZ
+      - PUID
+      - PGID
+
+
+  zigbee2mqtt:
+    image: koenkk/zigbee2mqtt:latest
+    restart: always  
+    depends_on:
+      - mosquitto
+      - reverse-proxy
+    #network_mode: host  
+    privileged: true  
+    volumes:
+      - ./zigbee2mqtt:/app/data
+      - /run/udev:/run/udev:ro
+    devices:
+      #- /dev/ttyACM0:/dev/ttyACM0
+      - /dev/ttyUSB0:/dev/ttyUSB0
+    environment:
+      - TZ
+      - PUID
+      - PGID    
+      #- DEBUG=zigbee-herdsman*
+    ports:
+      - 8381:8381
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.zigbee2mqtt.entrypoints=websecure
+      - traefik.http.routers.zigbee2mqtt.rule=Host(`zigbee2mqtt.dacha.vafin.ru`)
+      - traefik.http.routers.zigbee2mqtt.tls.certresolver=letsencrypt
+      - traefik.http.services.zigbee2mqtt.loadbalancer.server.port=8381
+
+  homer:
+    image: b4bz/homer
+    restart: always  
+    depends_on:
+      - reverse-proxy
+    volumes:
+      - ./homer/assets/:/www/assets
+    environment:
+      - TZ
+      - PUID
+      - PGID
+      - UID
+      - GID
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.homer.entrypoints=websecure
+      - traefik.http.routers.homer.rule=Host(`dacha.vafin.ru`)
+      - traefik.http.routers.homer.tls.certresolver=letsencrypt
+      - traefik.http.services.homer.loadbalancer.server.port=8080
+
+
+  transmission-openvpn:
+    image: haugene/transmission-openvpn
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - /home/timurv/media:/data/completed
+      - /home/timurv/media/downloads:/data/incomplete
+      - ./transmission:/config
+    environment:
+      - PUID
+      - PGID
+      - OPENVPN_PROVIDER
+      - OPENVPN_CONFIG
+      - OPENVPN_USERNAME
+      - OPENVPN_PASSWORD
+      - LOCAL_NETWORK
+      - TRANSMISSION_WEB_UI
+      - TRANSMISSION_HOME
+      - TRANSMISSION_DOWNLOAD_DIR
+      - TRANSMISSION_INCOMPLETE_DIR
+      - TRANSMISSION_WATCH_DIR
+      - TRANSMISSION_CACHE_SIZE_MB
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    ports:
+      - '9091:9091'
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.transmission-openvpn.entrypoints=websecure
+      - traefik.http.routers.transmission-openvpn.rule=Host(`transmission.dacha.vafin.ru`)
+      - traefik.http.routers.transmission-openvpn.tls.certresolver=letsencrypt
+      - traefik.http.services.transmission-openvpn.loadbalancer.server.port=9091
+
+
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    restart: unless-stopped
+    container_name: plex
+    network_mode: host
+    environment:
+      - PUID
+      - PGID
+      - VERSION=docker
+      - PLEX_CLAIM
+    volumes:
+      - /home/timurv/docker/plex:/config
+      - /home/timurv/media/tv:/tv
+      - /home/timurv/media/movies:/movies
+
+
+
+  glances:
+    image: nicolargo/glances:latest
+    restart: unless-stopped
+    network_mode: host
+    privileged: true
+    pid: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/os-release:/etc/os-release:ro
+      - ./glances:/config
+    environment:
+      - TZ
+      - PUID
+      - PGID    
+      - GLANCES_OPT=-C /config/glances.conf -w
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.glances.entrypoints=websecure
+      - traefik.http.routers.glances.rule=Host(`glances.dacha.vafin.ru`)
+      - traefik.http.routers.glances.tls.certresolver=letsencrypt
+      - traefik.http.services.glances.loadbalancer.server.port=61208
+
+
+volumes:
+  portainer_data:

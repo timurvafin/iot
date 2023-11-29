@@ -1,0 +1,7 @@
+---
+
+light:
+
+  - platform: switch
+    name: "BBQ light"
+    entity_id: switch.garden_bbq_light_1

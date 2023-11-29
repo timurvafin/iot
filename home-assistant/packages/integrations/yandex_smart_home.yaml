@@ -1,0 +1,107 @@
+---
+
+### Yandex Smart Home ### 
+
+
+yandex_smart_home:
+
+  filter:
+    include_entities:
+      - input_button.house_button_came_home
+      - input_button.house_button_leave_home
+      - input_button.house_button_going_to_leave_home    
+      - input_button.house_button_going_to_sleep  
+      - media_player.sonos
+      - light.house_all_lights
+      - light.hall_light
+      - light.corridor_light
+      - light.restroom_light
+      - light.kitchen_light
+      - light.diningroom_light
+      - light.laundry_light
+      - light.childrens_light
+      - light.guestroom_light
+      - light.boilerroom_light
+      - light.livingroom_light_1
+      - light.livingroom_light_2
+      - light.bathroom_light_main
+      - light.bedroom_light_main
+      - light.bedroom_bra_lights
+      - light.terrasse_all_lights
+      - light.garden_all_lights
+  
+  entity_config:
+    media_player.sonos:
+      name: Колонки
+      type: devices.types.media_device
+      support_set_channel: false
+    switch.yv1lf08acl1611992_engine:
+      name: Машина
+    light.hall_light:
+      name: Лампочка
+      room: Прихожая
+    light.corridor_light:
+      name: Лампочка
+      room: Коридор
+    light.restroom_light:
+      name: Лампочка
+      room: Туалет
+    light.kitchen_light:
+      name: Лампочка
+      room: Кухня
+    light.diningroom_light:
+      name: Лампочка
+      room: Столовая
+    light.laundry_light:
+      name: Лампочка
+      room: Постирочная
+    light.childrens_light:
+      name: Лампочка
+      room: Детская
+    light.guestroom_light:
+      name: Лампочка
+      room: Гостевая
+    light.boilerroom_light:
+      name: Лампочка
+      room: Котельная
+    light.livingroom_light_1:
+      name: Люстра
+      room: Гостиная
+    light.livingroom_light_2:
+      name: Точки
+      room: Гостиная
+    light.bathroom_light_main:
+      name: Лампочка
+      room: Ванная
+    light.bedroom_light_main:
+      name: Люстра
+      room: Спальня
+    light.bedroom_bra_lights:
+      name: Бра
+      room: Спальня
+    light.terrasse_all_lights:
+      name: Лампочка
+      room: Терраса
+    light.garden_all_lights:
+      name: Фонари
+      room: Двор
+    light.house_all_lights:
+      name: Весь свет
+      room: Дом
+    input_button.house_button_came_home:
+      name: Сценарий Пришел
+      state_unknown: true
+      room: Дом
+    input_button.house_button_going_to_leave_home:
+      name: Сценарий Я Уезжаю
+      state_unknown: true
+      room: Дом
+    input_button.house_button_leave_home:
+      name: Сценарий Я Ушел
+      state_unknown: true
+      room: Дом
+    input_button.house_button_going_to_sleep:
+      name: Сценарий Я Иду Спать
+      state_unknown: true
+      room: Дом
+

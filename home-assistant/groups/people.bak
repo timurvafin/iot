@@ -1,0 +1,6 @@
+people:
+  name: People
+  all: false
+  entities:
+    - person.timur
+    - person.elina

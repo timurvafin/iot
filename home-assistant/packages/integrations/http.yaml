@@ -1,0 +1,10 @@
+---
+### HTTP integration serves all files and data required for the Home Assistant frontend.
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.22.0.0/16 # docker default
+    - 172.18.0.0/16
+    - 127.0.0.1
+    - ::1

@@ -1,0 +1,75 @@
+---
+# Homepage configuration
+# See https://fontawesome.com/icons for icons options
+
+# Optional: Use external configuration file.
+# Using this will ignore remaining config in this file
+# externalConfig: https://example.com/server-luci/config.yaml
+
+title: "Dashboard"
+subtitle: "Dacha"
+icon: "fas fa-home"
+header: false # Set to false to hide the header
+columns: "3" # "auto" or number (must be a factor of 12: 1, 2, 3, 4, 6, 12)
+connectivityCheck: true # whether you want to display a message when the apps are not accessible anymore (VPN disconnected for example)
+theme: default # 'default' or one of the themes available in 'src/assets/themes'.
+
+# Services
+# First level array represents a group.
+# Leave only a "items" key if not using group (group name, icon & tagstyle are optional, section separation will not be displayed).
+services:
+  - name: "Network"
+    icon: "fas fa-network-wired"
+    items:
+      - name: "Huawei"
+        icon: "fas fa-sim-card"
+        url: "http://192.168.8.1/"
+      
+      - name: "TP Link"
+        icon: "far fa-hdd"
+        url: "http://192.168.0.254/"
+      
+      - name: "Unifi"
+        icon: "fas fa-network-wired"
+        url: "https://192.168.1.15/"
+      
+  - name: "Docker"
+    icon: "fab fa-docker"
+    items:
+      - name: "Traefik"
+        icon: "fas fa-stream"
+        url: "https://proxy.dacha.vafin.ru/"
+      
+      - name: "Portainer"
+        icon: "fab fa-docker"
+        url: "https://portainer.dacha.vafin.ru/"
+
+  - name: "IoT"
+    icon: "fas fa-laptop-house"
+    items:
+      
+      - name: "Home Assistant"
+        icon: "fas fa-laptop-house"
+        url: "https://ha.dacha.vafin.ru/"
+      
+      - name: "HASS Configurator"
+        icon: "fas fa-cog"
+        url: "https://hac.dacha.vafin.ru/"
+      
+      - name: "Zigbee2mqtt"
+        icon: "fas fa-database"
+        url: "https://zigbee2mqtt.dacha.vafin.ru/"
+      
+
+  - name: "Media"
+    icon: "fas fa-photo-video"
+    items:
+      
+      - name: "Transmission"
+        icon: "fa-solid fa-download"
+        url: "https://transmission.dacha.vafin.ru/"
+      
+      - name: "Plex"
+        icon: "fa fa-film"
+        url: "https://app.plex.tv/"
+      

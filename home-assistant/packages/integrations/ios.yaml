@@ -1,0 +1,13 @@
+---
+
+ios:
+  actions:
+    - name: "Coming Home"
+      background_color: "#000000"
+      icon:
+        icon: home_import_outline
+
+    - name: "Leaving Home"
+      background_color: "#000000"
+      icon:
+        icon: home_export_outline

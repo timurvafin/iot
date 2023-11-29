@@ -1,0 +1,55 @@
+---
+
+
+light:
+
+  - platform: switch
+    name: Bathroom Light Main
+    entity_id: switch.house_bathroom_light_1
+
+  - platform: switch
+    name: Bathroom Mirror Light
+    entity_id: switch.house_bathroom_light_2
+
+  - platform: group
+    name: "Bathroom All Lights"
+    unique_id: bathroom_all_lights
+    entities:
+      - light.bathroom_light_main
+      - light.bathroom_mirror_light
+
+automation:
+
+  - id: house_bathroom_light_on_motion
+    alias: "Bathroom Lights – Toggle on motion"
+
+    trigger:
+      platform: state
+      entity_id: binary_sensor.house_bathroom_sensor_occupancy
+      from: "off"
+      to: "on"
+     
+    condition:
+      - condition: or
+        conditions:
+        - condition: sun
+          after: sunset
+          after_offset: "00:50"
+        - condition: sun
+          before: sunrise
+          before_offset: "00:45"
+
+    action:
+      - service: light.turn_on
+        target: 
+          entity_id: light.bathroom_light_main
+      - wait_for_trigger:
+          platform: state
+          entity_id: binary_sensor.house_bathroom_sensor_occupancy
+          from: "on"
+          to: "off"
+      - delay: "00:02"
+      - service: light.turn_off
+        target: 
+          entity_id: light.bathroom_light_main
+

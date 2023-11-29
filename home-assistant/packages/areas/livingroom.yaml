@@ -1,0 +1,102 @@
+---
+
+### Livingroom ###
+
+light:
+
+  - platform: switch
+    name: Livingroom Light 1
+    entity_id: switch.house_livingroom_light_1_l1
+
+  - platform: switch
+    name: Livingroom Light 2
+    entity_id: switch.house_livingroom_light_1_l2
+
+  - platform: group
+    name: "Livingroom All Lights"
+    unique_id: livingroom_all_lights
+    entities:
+      - light.livingroom_light_1
+      - light.livingroom_light_2
+
+
+script:
+
+  play_music:
+    alias: "Play Music"
+    sequence:
+      # choose Sonos for living room
+      - service: media_player.select_source
+        entity_id: media_player.yandex_station_940050344110281f098b
+        data:
+          source: Sonos
+
+      # start playing
+      - service: media_player.media_play
+        entity_id: media_player.yandex_station_940050344110281f098b
+
+      - delay: 1
+
+      # set volume for Sonos
+      - service: media_player.volume_set
+        entity_id: media_player.sonos
+        data:
+          volume_level: 0.12
+
+      # mute livingroom
+      - service: media_player.volume_set
+        entity_id: media_player.yandex_station_940050344110281f098b
+        data:
+          volume_level: 0
+
+      # set volume for bathroom and bedroom
+      - service: media_player.volume_set
+        entity_id:
+          - media_player.yandex_station_mg00000000000006466000003faec0e2
+          - media_player.yandex_station_mg0000000000000074080000d1f21183
+        data:
+          volume_level: 0.2
+
+  pause_music:
+    alias: "Pause Music"
+    sequence:
+      - service: media_player.media_pause
+        entity_id: media_player.yandex_station_940050344110281f098b
+
+
+automation:
+
+  - id: livingroom_lights_on_off_on_movie
+    alias: Livingroom - Turn on off lights on Movie
+    use_blueprint:
+      path: Blackshome/sensor-light-add-on.yaml
+      input:
+        trigger_entities:
+          - media_player.gostinaia
+
+        trigger_on_state:
+          - playing
+        trigger_off_state:
+          - idle
+          - standby
+          - "off"
+
+        include_sun: sun_enabled     
+        include_start_turn_off: enable_start_turn_off
+        include_end_turn_on: enable_end_turn_on
+
+        off_light_switch:
+          entity_id:
+            - light.livingroom_all_lights
+            - light.kitchen_light
+            - light.diningroom_light
+            - light.hall_light
+            - light.corridor_light
+
+        light_switch:
+          entity_id: 
+
+        end_light_switch:
+          entity_id: light.livingroom_light_1
+
+

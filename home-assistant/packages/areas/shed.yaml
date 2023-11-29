@@ -1,0 +1,76 @@
+---
+
+### Shed ###
+
+light:
+
+  - platform: switch
+    name: "Shed light 1"
+    entity_id: switch.house_shed_light_1
+
+  - platform: switch
+    name: "Shed light 2"
+    entity_id: switch.house_shed_light_2
+
+  - platform: group
+    name: "Shed All Lights"
+    unique_id: shed_all_lights
+    entities:
+      - light.shed_light_1
+      - light.shed_light_2
+
+
+
+script:
+
+  start_volvo:
+    alias: "Volvo - Start Volvo"
+
+    sequence:
+      - condition: state
+        entity_id: device_tracker.yv1lf08acl1611992_position
+        state: "home"
+
+      - service: media_player.play_media
+        entity_id: media_player.yandex_station_940050344110281f098b
+        data:
+          media_content_id: "Завожу машину"
+          media_content_type: text  
+
+      - service: lock.lock
+        entity_id: lock.yv1lf08acl1611992_door_lock
+
+      - wait_template: "{{ is_state('binary_sensor.yv1lf08acl1611992_door_lock', 'off') }}"
+
+      - service: switch.turn_on
+        entity_id: switch.yv1lf08acl1611992_engine
+
+      - wait_template: "{{ is_state('switch.yv1lf08acl1611992_engine', 'on') }}"
+
+      - service: media_player.play_media
+        entity_id: media_player.yandex_station_940050344110281f098b
+        data:
+          media_content_id: "Машина запущена"
+          media_content_type: text  
+
+
+automation:
+
+  - id: house_terasse_shed_light_on_motion
+    alias: Shed Lights - Turn on shed light on motion
+    use_blueprint:
+      path: Blackshome/sensor-light.yaml
+      input:
+        motion_trigger:
+          - binary_sensor.naves_motion
+        light_switch:
+          entity_id: light.shed_all_lights
+
+  - id: house_shed_link_on_of_state
+    alias: Shed Lights - Link on/off state
+    use_blueprint:
+      path: aderusha/link_multiple_devices.yaml
+      input:
+        linked_entities:
+          - light.shed_light_1
+          - light.shed_light_2

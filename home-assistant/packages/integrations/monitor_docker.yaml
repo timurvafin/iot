@@ -1,0 +1,26 @@
+---
+
+monitor_docker:
+  - name: Docker
+    containers:
+      - docker-homer-1
+      - docker-mosquitto-1
+      - docker-portainer-1
+      - docker_glances_1
+      - docker_home-assistant_1
+      - docker_reverse-proxy_1
+      - docker_zigbee2mqtt_1
+    rename:
+      docker-homer-1: Homer
+      docker-mosquitto-1: Mosquitto
+      docker-portainer-1: Portainer
+      docker_glances_1: Glances
+      docker_home-assistant_1: HA
+      docker_reverse-proxy_1: Proxy
+      docker_zigbee2mqtt_1: Zigbee2mqtt
+    monitored_conditions:
+      - version
+      - containers_running
+      - containers_total
+      - state
+      - status

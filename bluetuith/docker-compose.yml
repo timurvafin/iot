@@ -1,0 +1,15 @@
+  version: '3'
+
+  services:
+
+    bluetuith:
+      image: darkhz/bluetuith
+      container_name: bluetuith
+
+      build:
+        context: .
+ 
+      stdin_open: true
+      tty: true
+      volumes:
+        - /run/dbus:/run/dbus:ro

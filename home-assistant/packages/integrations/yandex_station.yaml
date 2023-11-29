@@ -1,0 +1,4 @@
+yandex_station:
+  media_players:
+    - entity_id: media_player.sonos
+      name: Sonos

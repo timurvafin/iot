@@ -1,0 +1,101 @@
+---
+
+### Garden ###
+
+light:
+
+  - platform: switch
+    name: "Garden front-left light"
+    entity_id: switch.garden_front_light_1_l1
+
+  - platform: switch
+    name: "Garden front-center light"
+    entity_id: switch.garden_front_light_1_l2
+
+  - platform: switch
+    name: "Garden front-right light"
+    entity_id: switch.garden_front_light_2
+
+  - platform: switch
+    name: "Garden back far light"
+    entity_id: switch.garden_back_light_1
+
+  - platform: switch
+    name: "Garden back near light"
+    entity_id: switch.garden_back_light_2
+
+  - platform: switch
+    name: "Garden Tree light 1"
+    entity_id: switch.garden_tree_light_1
+
+  - platform: switch
+    name: "Garden Tree light 2"
+    entity_id: switch.garden_tree_light_2
+
+  - platform: switch
+    name: "Garden Tree light 3"
+    entity_id: switch.garden_tree_light_3
+
+  - platform: group
+    name: "Garden Front Lights"
+    unique_id: garden_front_lights
+    entities:
+      - light.garden_front_left_light
+      - light.garden_front_center_light
+      - light.garden_front_right_light
+      - light.garden_tree_light_1
+
+  - platform: group
+    name: "Garden Back Lights"
+    unique_id: garden_back_lights
+    entities:
+      - light.garden_back_near_light
+      - light.garden_back_far_light
+      - light.garden_tree_light_2
+      - light.garden_tree_light_3
+
+  - platform: group
+    name: "Garden Tree Lights"
+    unique_id: garden_tree_lights
+    entities:
+      - light.garden_tree_light_1    
+      - light.garden_tree_light_2
+      - light.garden_tree_light_3
+
+  - platform: group
+    name: "Garden All Lights"
+    unique_id: garden_all_lights
+    entities:
+      - light.garden_front_lights
+      - light.garden_back_lights
+
+automation:
+
+  - id: garden_lights_turn_off_at_night
+    alias: "Garden Lights – Turn off at morning"
+    trigger:
+      - platform: sun
+        event: sunrise
+    action:
+      - service: light.turn_off
+        target:
+          entity_id: light.garden_all_lights
+
+      - service: script.automation_notification
+        data:
+          message: "Garden Lights – Turned off at morning."
+
+
+  - id: garden_light_turn_on_at_evening
+    alias: "Garden Lights – Turn on at evening"
+    trigger:
+      - platform: sun
+        event: sunset
+    action:
+      - service: light.turn_on
+        target:
+          entity_id: light.garden_all_lights
+
+      - service: script.automation_notification
+        data:
+          message: "Garden Lights – Turned on at evening."

@@ -1,0 +1,11 @@
+  version: '3'
+
+  services:
+    lazydocker:
+      image: defnotgustavom/lazydocker
+      container_name: lazydocker
+      stdin_open: true
+      tty: true
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - /home/timurv/docker/lazydocker:/.config/jesseduffield/lazydocker

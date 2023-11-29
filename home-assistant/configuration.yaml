@@ -1,0 +1,9 @@
+---
+################################################################################
+# Home Assistant Configuration
+################################################################################
+
+# Nothing to see here. Move along.
+homeassistant:
+  packages: !include_dir_named packages
+

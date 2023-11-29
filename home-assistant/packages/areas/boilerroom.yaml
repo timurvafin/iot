@@ -1,0 +1,121 @@
+---
+
+light:
+  - platform: switch
+    name: Boilerroom Light
+    entity_id: switch.house_boilerroom_light_1
+
+script:
+
+  boilerroom_heater_eco_mode:
+    alias: "Boilerroom heater - Turn on Eco mode"
+    sequence:
+      - service: select.select_option
+        target:
+          entity_id: select.zont_heating_modes
+        data:
+          option: "Эконом"
+
+  boilerroom_heater_comfort_mode:
+    alias: "Boilerroom heater - Turn on Comfort mode"
+    sequence:
+      - service: select.select_option
+        target:
+          entity_id: select.zont_heating_modes
+        data:
+          option: "Комфорт"
+
+
+
+automation:
+
+  - id: boilerroom_heater_presence_off
+    alias: "Heater – Turn on Eco mode when nobody at home"
+    trigger:
+      platform: state
+      entity_id: group.people
+      from: "home"
+      to: "not_home"
+      for:
+        minutes: 30
+    action:
+      - service: script.boilerroom_heater_eco_mode
+      - service: script.automation_notification
+        data:
+          message: "Heater: Turn on Eco mode when nobody at home"
+
+  - id: boilerroom_heater_presence_on
+    alias: "Heater – Turn on Comfort mode when somebody at home"
+    trigger:
+      platform: state
+      entity_id: group.people
+      from: "not_home"
+      to: "home"
+    condition:
+      condition: time
+      after: "08:00:00"
+      before: "00:00:00"
+    action:
+      - service: script.boilerroom_heater_comfort_mode
+      - service: script.automation_notification
+        data:
+          message: "Heater: Turn on Comfort mode when somebody at home"
+
+  - id: boilerroom_heater_time_off
+    alias: "Heater – Turn on Eco mode at night"
+    trigger:
+      platform: time
+      at: "02:00:00"
+    condition:
+      condition: state
+      entity_id: group.people
+      state: "home"
+    action:
+      - service: script.boilerroom_heater_eco_mode
+      - service: script.automation_notification
+        data:
+          message: "Heater: Turn on Eco mode at night"
+
+  - id: boilerroom_heater_time_on
+    alias: "Water Heater – Turn on Comfort mode at morning"
+    trigger:
+      at: "6:00:00"
+      platform: time
+    condition:
+      condition: state
+      entity_id: group.people
+      state: "home"
+    action:
+      - service: script.boilerroom_heater_comfort_mode
+      - service: script.automation_notification
+        data:
+          message: "Heater: Turn on Comfort mode when at morning"
+
+
+  # - id: boilerroom_water_heater_on_anti_legionella
+  #   alias: "Water Heater – enable anti legionella"
+  #   trigger:
+  #     platform: state
+  #     entity_id: binary_sensor.zont_water_heater
+  #     to: "off"
+  #     for:
+  #       days: 4
+  #   action:
+  #     - service: rest_command.zont_water_heater_on
+  #     - service: timer.start
+  #       target:
+  #         entity_id: timer.water_heater_anti_legionella
+
+  # - id: boilerroom_water_heater_off_anti_legionella
+  #   alias: "Water Heater – disable anti legionella"
+  #   trigger:
+  #     platform: event
+  #     event_type: timer.finished
+  #     event_data:
+  #       entity_id: timer.water_heater_anti_legionella
+  #   condition:
+  #     condition: state
+  #     entity_id: group.people
+  #     state: "not_home"
+  #   action:
+  #     service: rest_command.zont_water_heater_off

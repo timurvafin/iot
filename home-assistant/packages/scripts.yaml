@@ -1,0 +1,44 @@
+---
+
+script:
+
+  automation_notification:
+    alias: "Script - Send automation notification"
+
+    fields: 
+      message:
+        description: "Notification message"
+        required: true
+
+    sequence:
+      - service: notify.telegram
+        data:
+          title: "Automation triggered 🤖"
+          message: "{{ message }}"
+#      - service: notify.notify
+#        data:
+#          title: "Automation triggered 🤖"
+#          message: "{{ message }}"
+#          data:
+#            group: "automation"
+#            push:
+#              sound: none
+#              interruption-level: passive
+
+
+  turn_on_lights_after_sunsent:
+    alias: "Script - Turn on lights if it's after sunsent"
+    
+    fields:
+      entity_id:    
+        description: "List of light entities"
+        required: true
+
+    sequence:
+      - condition: state
+        entity_id: sun.sun
+        state: "below_horizon"
+
+      - service: light.turn_on
+        target: 
+          entity_id: "{{ entity_id }}"

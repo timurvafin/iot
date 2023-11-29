@@ -1,0 +1,185 @@
+### Zont Termostat ### 
+
+rest:
+  - resource: https://lk.zont-online.ru/api/widget/v2/get_devices
+    method: POST
+
+    authentication: basic
+    username: !secret zont_username
+    password: !secret zont_password
+
+    headers:
+      Content-Type: application/json
+      X-ZONT-Client: !secret zont_client
+
+    payload: "{}"
+
+    sensor:
+      - name: "Zont Rest - Boiler"
+        json_attributes_path: "$.devices[0].heating_circuits[0]"
+        value_template: "OK"
+        json_attributes:
+          - "id"
+          - "name"
+          - "status"
+          - "active"
+          - "actual_temp"
+          - "is_off"
+          - "target_temp"
+          - "current_mode"
+
+      - name: "Zont Rest - Heater"
+        json_attributes_path: "$.devices[0].heating_circuits[1]"
+        value_template: "OK"
+        json_attributes:
+          - "id"
+          - "name"
+          - "status"
+          - "active"
+          - "actual_temp"
+          - "is_off"
+          - "target_temp"
+          - "current_mode"
+
+      - name: "Zont Rest - Heating Modes"
+        json_attributes_path: "$.devices[0]"
+        value_template: "OK"
+        json_attributes:
+          - "heating_modes"
+
+      - name: "Zont Rest - Outside temperature"
+        json_attributes_path: "$.devices[0].sensors[0]"
+        value_template: "OK"        
+        json_attributes:
+            - "id"
+            - "name"
+            - "type"
+            - "status"
+            - "value"
+            - "unit"
+
+      - name: "Zont Rest - Boiler temperature"
+        json_attributes_path: "$.devices[0].sensors[1]"
+        value_template: "OK"        
+        json_attributes:
+            - "id"
+            - "name"
+            - "type"
+            - "status"
+            - "value"
+            - "unit"
+
+      - name: "Zont Rest - Bedroom temperature"
+        json_attributes_path: "$.devices[0].sensors[3]"
+        value_template: "OK"        
+        json_attributes:
+            - "id"
+            - "name"
+            - "type"
+            - "status"
+            - "value"
+            - "unit"
+
+
+template:
+  - sensor:
+
+    - name: "Zont - Boiler actual temperature"
+      state: "{{ state_attr('sensor.zont_rest_boiler', 'actual_temp') }}"
+      availability: "{{is_state('sensor.zont_rest_boiler', 'OK') }}"
+      device_class: "temperature"
+      unit_of_measurement: "°C"
+
+    - name: "Zont - Boiler target temperature"
+      state: "{{ state_attr('sensor.zont_rest_boiler', 'target_temp') }}"
+      availability: "{{is_state('sensor.zont_rest_boiler', 'OK') }}"
+      device_class: "temperature"
+      unit_of_measurement: "°C"
+
+    - name: "Zont - Heater actual temperature"
+      state: "{{ state_attr('sensor.zont_rest_heater', 'actual_temp') }}"
+      availability: "{{is_state('sensor.zont_rest_heater', 'OK') }}"
+      device_class: "temperature"
+      unit_of_measurement: "°C"
+
+    - name: "Zont - Heater target temperature"
+      state: "{{ state_attr('sensor.zont_rest_heater', 'target_temp') }}"
+      availability: "{{is_state('sensor.zont_rest_heater', 'OK') }}"
+      device_class: "temperature"
+      unit_of_measurement: "°C"
+
+    - name: "Zont - Heating mode ID"
+      state: "{{ state_attr('sensor.zont_rest_heater', 'current_mode') }}"
+      availability: "{{is_state('sensor.zont_rest_heater', 'OK') }}"
+      device_class: "enum"      
+      icon: "mdi:radiator"        
+
+    - name: "Zont - Heating mode"
+      state: >
+        {% set heating_mode_id = state_attr('sensor.zont_rest_heater', 'current_mode') %}
+        {% set heating_modes = state_attr('sensor.zont_rest_heating_modes', 'heating_modes') %}
+
+        {{ heating_modes[heating_mode_id]['name'] }}
+
+      availability: "{{is_state('sensor.zont_rest_heating_modes', 'OK') }}"
+      device_class: "enum"      
+      icon: "mdi:radiator"        
+
+    - name: "Zont - Boiler temperature"
+      state: "{{ state_attr('sensor.zont_rest_boiler_temperature', 'value') }}"
+      availability: "{{is_state('sensor.sensor.zont_rest_boiler_temperature', 'OK') }}"
+      device_class: "temperature"
+      unit_of_measurement: "°C"
+          
+    - name: "Zont - Outside temperature"
+      state: "{{ state_attr('sensor.zont_rest_outside_temperature', 'value') }}"
+      availability: "{{is_state('sensor.zont_rest_outside_temperature', 'OK') }}"
+      device_class: "temperature"
+      unit_of_measurement: "°C"
+    
+    - name: "Zont - Bedroom temperature"
+      state: "{{ state_attr('sensor.zont_rest_bedroom_temperature', 'value') }}"
+      availability: "{{is_state('sensor.zont_rest_bedroom_temperature', 'OK') }}"
+      device_class: "temperature"
+      unit_of_measurement: "°C"
+
+  - binary_sensor:
+    
+    - name: "Zont - Boiler active"
+      state: "{{ state_attr('sensor.zont_rest_boiler', 'active') }}"
+      availability: "{{is_state('sensor.zont_rest_boiler', 'OK') }}"
+      device_class: "heat"
+    
+    - name: "Zont - Heater active"
+      state: "{{ state_attr('sensor.zont_rest_heater', 'active') }}"
+      availability: "{{is_state('sensor.zont_rest_heater', 'OK') }}"
+      device_class: "heat"
+
+  - select:
+    - name: "Zont - Heating Modes"
+      unique_id: zont_heating_modes
+      icon: "mdi:radiator"        
+      state: "{{ state('sensor.zont_heating_mode') }}"
+      options: "{{ state_attr('sensor.zont_rest_heating_modes', 'heating_modes') | map(attribute='name') | list }}"
+      select_option:
+        - service: rest_command.activate_heating_mode
+          data:
+            zont_device_id: !secret zont_device_id
+            mode_id: "{{ state_attr('sensor.zont_rest_heating_modes', 'heating_modes') | selectattr('name', 'equalto', option) | map(attribute='id') | list | first }}"
+        - service: homeassistant.update_entity
+          entity_id: sensor.zont_rest_heater
+
+
+rest_command:
+  activate_heating_mode:
+    url: https://lk.zont-online.ru/api/widget/v2/activate_heating_mode
+    method: POST    
+
+    username: !secret zont_username
+    password: !secret zont_password
+
+    headers:
+      Content-Type: application/json
+      X-ZONT-Client: !secret zont_client
+
+    payload: '{ "device_id": "{{ zont_device_id }}", "mode_id": "{{ mode_id }}" }'

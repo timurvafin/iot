@@ -1,0 +1,103 @@
+---
+
+### Terrasse ###
+
+light:
+
+  - platform: switch
+    name: "Terrasse side light"
+    entity_id: switch.house_terrasse_light_1
+
+  - platform: switch
+    name: "Terrasse front light"
+    entity_id: switch.house_terrasse_light_2
+
+  - platform: group
+    name: "Terrasse All Lights"
+    unique_id: terrasse_all_lights
+    entities:
+      - light.terrasse_front_light
+      - light.terrasse_side_light
+
+  - platform: group
+    name: "Terrasse and Shed Lights"
+    unique_id: terrasse_and_shed_lights
+    entities:
+      - light.terrasse_all_lights
+      - light.shed_all_lights
+
+
+automation:
+
+  - id: house_terrasse_turn_off_at_night
+    alias: "Terrasse Lights – Turn off at night"
+    trigger:
+      - platform: time
+        at: "00:00:00"
+    action:
+      - service: light.turn_off
+        target:
+          entity_id: light.terrasse_all_lights
+
+      - service: script.automation_notification
+        data:
+          message: "Terrasse Lights – Turned off at night."
+          
+
+  - id: house_terrasse_light_turn_on_at_evening
+    alias: "Terrasse Lights – Turn on at evening"
+    trigger:
+      - platform: sun
+        event: sunset
+    condition:
+      - condition: state
+        entity_id: group.people
+        state: "home"
+    action:
+      - service: light.turn_on
+        target:
+          entity_id: light.terrasse_all_lights
+
+      - service: script.automation_notification
+        data:
+          message: "Terrasse Lights – Turned on at evening."
+
+
+  - id: house_terasse_side_light_on_motion
+    alias: Terrasse Lights - Turn on side light on motion
+    use_blueprint:
+      path: Blackshome/sensor-light.yaml
+      input:
+        motion_trigger:
+          - binary_sensor.zapad_motion
+        light_switch:
+          entity_id: switch.house_terrasse_light_1
+
+
+  - id: house_terasse_front_light_on_motion
+    alias: Terrasse Lights - Turn on front light on motion
+    use_blueprint:
+      path: Blackshome/sensor-light.yaml
+      input:
+        motion_trigger:
+          - binary_sensor.sever_motion
+        light_switch:
+          entity_id: switch.house_terrasse_light_2
+
+
+  - id: house_terasse_motion_notification
+    alias: Terrasse - UniFi Protect Motion Notification
+    use_blueprint:
+      path: AngellusMortis/notification_smart_motion_event.yaml
+      input:
+        presence_filter:
+          - device_tracker.timurv_iphone
+        obj_sensor:
+          - binary_sensor.voskhod_motion
+          - binary_sensor.zapad_motion
+          - binary_sensor.naves_motion
+          - binary_sensor.sever_motion
+        cooldown: 60
+        silence_timer: 35
+        channel: Smart Detection
+        lovelace_view: "https://ha.dacha.vafin.ru/lovelace/3"
