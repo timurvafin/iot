@@ -58,7 +58,7 @@ light:
     name: "Garden Tree Lights"
     unique_id: garden_tree_lights
     entities:
-      - light.garden_tree_light_1    
+      - light.garden_tree_light_1
       - light.garden_tree_light_2
       - light.garden_tree_light_3
 
@@ -68,6 +68,7 @@ light:
     entities:
       - light.garden_front_lights
       - light.garden_back_lights
+      - light.bbq_light
 
 automation:
 
@@ -79,7 +80,9 @@ automation:
     action:
       - service: light.turn_off
         target:
-          entity_id: light.garden_all_lights
+          entity_id:
+            - light.garden_all_lights
+            - light.garden_tree_lights
 
       - service: script.automation_notification
         data:
@@ -99,3 +102,24 @@ automation:
       - service: script.automation_notification
         data:
           message: "Garden Lights – Turned on at evening."
+
+
+  - id: garden_ring_doorbell
+    alias: "Garden Doorbell - Play Sonos sound and send notification"
+    mode: single
+
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.g4_doorbell_doorbell
+        to: "on"
+
+    action:
+      - service: script.sonos_play_media
+        data:
+          sonos: media_player.sonos
+          media: "https://ha.dacha.vafin.ru/local/sounds/chime.mp3"
+
+      - service: script.unifi_protect_notification
+        data:
+          entity_id: "{{ trigger.entity_id }}"
+          message: "🔔 Doorbell was rung!"

@@ -7,3 +7,7 @@
 homeassistant:
   packages: !include_dir_named packages
 
+  # White list tmp folder to send files from it
+  allowlist_external_dirs:
+    - /tmp
+    - /config/downloads/unifi

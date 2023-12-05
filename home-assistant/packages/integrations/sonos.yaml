@@ -1,0 +1,40 @@
+---
+
+script:
+  sonos_play_media:
+    alias: "Unifi Protect - Play ring on Sonos"
+
+    fields:
+      sonos:
+        description: "Sono media player"
+        required: true
+
+      media:
+        description: "Media file"
+        required: true
+
+    sequence:
+      - service: sonos.snapshot
+        data:
+          entity_id: all
+      - service: media_player.volume_set
+        target:
+          entity_id:
+            - "{{sonos}}"
+        data:
+          volume_level: 0.45
+      - service: media_player.play_media
+        target:
+          entity_id:
+            - "{{sonos}}"
+        data:
+          media_content_type: music
+          media_content_id: "{{media}}"
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 4
+          milliseconds: 0
+      - service: sonos.restore
+        data:
+          entity_id: all

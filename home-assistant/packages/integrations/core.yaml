@@ -21,10 +21,10 @@ person:
 #updater:
 
 # Enable logging
-logger:
-  default: info
-  logs:
-    homeassistant.components.rest: debug
+# logger:
+#   default: info
+#   logs:
+#     homeassistant.components.rest: debug
 
 # Allows you to issue voice commands from the frontend in enabled browsers
 conversation:

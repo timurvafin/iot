@@ -7,24 +7,41 @@ light:
 
 script:
 
-  boilerroom_heater_eco_mode:
-    alias: "Boilerroom heater - Turn on Eco mode"
+  boilerroom_heater_set_mode:
+    alias: "Boilerroom heater - Set Heater mode"
+
+    fields:
+      mode:
+        description: "Mode"
+        required: true
     sequence:
       - service: select.select_option
         target:
           entity_id: select.zont_heating_modes
         data:
-          option: "Эконом"
+          option: "{{ mode }}"
+
+
+  boilerroom_heater_eco_mode:
+    alias: "Boilerroom heater - Turn on Eco mode"
+    sequence:
+      - service: script.boilerroom_heater_set_mode
+        data:
+          mode: "Эконом"
 
   boilerroom_heater_comfort_mode:
     alias: "Boilerroom heater - Turn on Comfort mode"
     sequence:
-      - service: select.select_option
-        target:
-          entity_id: select.zont_heating_modes
+      - service: script.boilerroom_heater_set_mode
         data:
-          option: "Комфорт"
+          mode: "Комфорт"
 
+  boilerroom_heater_boiling_mode:
+    alias: "Boilerroom heater - Turn on Boiling mode"
+    sequence:
+      - service: script.boilerroom_heater_set_mode
+        data:
+          mode: "Кипячение"
 
 
 automation:
@@ -77,7 +94,7 @@ automation:
           message: "Heater: Turn on Eco mode at night"
 
   - id: boilerroom_heater_time_on
-    alias: "Water Heater – Turn on Comfort mode at morning"
+    alias: "Heater – Turn on Comfort mode at morning"
     trigger:
       at: "6:00:00"
       platform: time
@@ -91,31 +108,31 @@ automation:
         data:
           message: "Heater: Turn on Comfort mode when at morning"
 
-
-  # - id: boilerroom_water_heater_on_anti_legionella
-  #   alias: "Water Heater – enable anti legionella"
-  #   trigger:
-  #     platform: state
-  #     entity_id: binary_sensor.zont_water_heater
-  #     to: "off"
-  #     for:
-  #       days: 4
-  #   action:
-  #     - service: rest_command.zont_water_heater_on
-  #     - service: timer.start
-  #       target:
-  #         entity_id: timer.water_heater_anti_legionella
-
-  # - id: boilerroom_water_heater_off_anti_legionella
-  #   alias: "Water Heater – disable anti legionella"
-  #   trigger:
-  #     platform: event
-  #     event_type: timer.finished
-  #     event_data:
-  #       entity_id: timer.water_heater_anti_legionella
-  #   condition:
-  #     condition: state
-  #     entity_id: group.people
-  #     state: "not_home"
-  #   action:
-  #     service: rest_command.zont_water_heater_off
+  - id: boilerroom_heater_boiling
+    alias: "Heater - Turn on Boiling mode"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.zont_boiler_actual_temperature
+        below: 60
+        for:
+          days: 3
+    condition:
+      - condition: state
+        entity_id: script.boilerroom_heater_boiling_mode
+        state: 'off'
+    action:
+      - service: script.boilerroom_heater_boiling_mode
+      - service: script.automation_notification
+        data:
+          message: "Heater Boiling: Turn on Boiling after 3 days of cold"
+      - wait_for_trigger:
+          - platform: numeric_state
+            entity_id: sensor.zont_boiler_actual_temperature
+            above: 59
+      - delay:
+          minutes: 15
+      - service: script.boilerroom_heater_eco_mode
+        entity_id:
+      - service: script.automation_notification
+        data:
+          message: "Heater Boiling: Turn on Eco mode"

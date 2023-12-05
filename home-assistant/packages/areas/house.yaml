@@ -61,7 +61,7 @@ script:
     alias: "Coming Home"
     sequence:
       - service: script.turn_on_lights_after_sunsent
-        data: 
+        data:
           entity_id:
             - light.shed_all_lights
             - light.terrasse_all_lights
@@ -77,7 +77,7 @@ script:
     sequence:
       - service: light.turn_off
         entity_id: light.house_all_lights
-          
+
       - service: script.pause_music
 
 
@@ -88,7 +88,7 @@ script:
         entity_id: media_player.yandex_station_940050344110281f098b
         data:
           media_content_id: 'Хорошо, расскажу про погоду'
-          media_content_type: text  
+          media_content_type: text
 
       - delay: 3
 
@@ -98,15 +98,15 @@ script:
           media_content_id: 'Какая погода в Казани?'
           media_content_type: command
 
-      - delay: 13          
+      - delay: 13
 
       - service: media_player.play_media
         entity_id: media_player.yandex_station_940050344110281f098b
         data:
           media_content_id: 'Про дорогу'
-          media_content_type: text  
+          media_content_type: text
 
-      - delay: 3                 
+      - delay: 3
 
       - service: media_player.play_media
         entity_id: media_player.yandex_station_940050344110281f098b
@@ -125,9 +125,12 @@ script:
             - light.bedroom_light_left
             - light.bedroom_light_right
 
+      - delay: "00:02"
+
       - service: light.turn_off
         target:
           entity_id:
+            - light.corridor_light
             - light.hall_light
             - light.restroom_light
             - light.kitchen_light
@@ -137,13 +140,7 @@ script:
             - light.livingroom_all_lights
             - light.terrasse_all_lights
             - light.shed_all_lights
-
-      - delay: "00:02"
-
-      - service: light.turn_off
-        target:
-          entity_id:
-            - light.corridor_light
+            - light.garden_back_near_light
 
 
 input_button:
@@ -166,7 +163,6 @@ input_button:
 
 
 automation:
-
   - id: house_lights_turn_off_presence_off
     alias: "House Lights – Turn off all lights when nobody at home"
     trigger:
@@ -234,4 +230,3 @@ automation:
       - service: script.automation_notification
         data:
           message: "Going to Sleep: Turned on lights."
-

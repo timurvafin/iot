@@ -1,0 +1,79 @@
+---
+
+shell_command:
+  unifi_media: 'python3 /config/scripts/unifi_media.py {{ path }} {{ token }} {{ file }}'
+
+
+script:
+  unifi_protect_notification:
+    alias: "Unifi Protect - Send notification with image/video from event"
+
+    fields:
+      entity_id:
+        description: "Entity Id"
+        required: true
+
+      message:
+        description: "Message"
+        required: true
+
+    variables:
+      device_id: "{{ device_id(entity_id) }}"
+      device_name: "{{ device_attr(device_id, 'name') }}"
+      event_id: "{{ state_attr(entity_id, 'event_id') }}"
+      nvr_id: "{{ config_entry_id(entity_id) }}"
+
+      time_before: 3
+      time_after: 10
+
+      video_at: "{{ states[entity_id].last_changed.isoformat() }}"
+      video_start: "{{ (as_datetime(video_at) - timedelta(seconds=time_before)).isoformat() }}"
+      video_end: "{{ (as_datetime(video_at) + timedelta(seconds=time_after)).isoformat() }}"
+
+      image_path: "thumbnail/{{ nvr_id }}/{{ event_id }}"
+      video_path: "video/{{ nvr_id }}/{{ entity_id }}/{{ video_start }}/{{ video_end }}"
+
+      file_path: "/config/downloads/unifi"
+      file_name: "{{ as_local(now()).strftime('%Y%m%d_%H%M%S') }}_{{ event_id }}"
+
+      image_file: "{{ file_path }}/{{ file_name }}.jpeg"
+      video_file: "{{ file_path }}/{{ file_name }}.mp4"
+
+    sequence:
+      - service: notify.telegram
+        data:
+          message: "{{ message }}"
+
+      - wait_template: "{{ is_state(entity_id, 'off') }}"
+
+      - service: shell_command.unifi_media
+        data:
+          token: !secret "ha_token"
+          path: "{{ image_path }}"
+          file: "{{ image_file }}"
+
+      - delay: 1
+
+      - service: notify.telegram
+        data:
+          message: "{{ message }}"
+          data:
+            photo:
+              - file: "{{ image_file }}"
+                caption: "{{ device_name }}"
+
+      - service: shell_command.unifi_media
+        data:
+          token: !secret "ha_token"
+          path: "{{ video_path }}"
+          file: "{{ video_file }}"
+
+      - delay: 15
+
+      - service: notify.telegram
+        data:
+          message: "{{ message }}"
+          data:
+            video:
+               - file: "{{ video_file }}"
+                 caption: "{{ device_name }}"

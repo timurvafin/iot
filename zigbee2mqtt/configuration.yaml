@@ -35,9 +35,9 @@ devices:
   '0x00158d000444d94c':
     friendly_name: garden.front.light-1
   '0x54ef441000124456':
-    friendly_name: house.terrasse.light-1
+    friendly_name: terrasse.light-1
   '0x54ef4410001243d6':
-    friendly_name: house.terrasse.light-2
+    friendly_name: terrasse.light-2
   '0x00158d000427fd07':
     friendly_name: house.livingroom.light-1
   '0x54ef441000126255':
@@ -72,7 +72,7 @@ devices:
   '0x54ef4410007fcaa7':
     friendly_name: house.hall.light-1
   '0x54ef4410007fc98a':
-    friendly_name: house.shed.light-1
+    friendly_name: shed.light-1
   '0x54ef4410007fcc67':
     friendly_name: garden.tree.light-1
   '0x54ef4410007fc91a':
@@ -86,7 +86,7 @@ devices:
   '0x54ef4410007fca36':
     friendly_name: garden.tree.light-2
   '0x54ef4410001de364':
-    friendly_name: house.shed.light-2
+    friendly_name: shed.light-2
   '0x54ef4410001de302':
     friendly_name: house.boilerroom.light-1
   '0x00158d000451f6ba':

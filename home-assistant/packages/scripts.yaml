@@ -5,7 +5,7 @@ script:
   automation_notification:
     alias: "Script - Send automation notification"
 
-    fields: 
+    fields:
       message:
         description: "Notification message"
         required: true
@@ -15,22 +15,12 @@ script:
         data:
           title: "Automation triggered 🤖"
           message: "{{ message }}"
-#      - service: notify.notify
-#        data:
-#          title: "Automation triggered 🤖"
-#          message: "{{ message }}"
-#          data:
-#            group: "automation"
-#            push:
-#              sound: none
-#              interruption-level: passive
-
 
   turn_on_lights_after_sunsent:
     alias: "Script - Turn on lights if it's after sunsent"
-    
+
     fields:
-      entity_id:    
+      entity_id:
         description: "List of light entities"
         required: true
 
@@ -40,5 +30,5 @@ script:
         state: "below_horizon"
 
       - service: light.turn_on
-        target: 
+        target:
           entity_id: "{{ entity_id }}"
