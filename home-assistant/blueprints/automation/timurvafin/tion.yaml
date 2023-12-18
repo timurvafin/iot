@@ -1,0 +1,115 @@
+blueprint:
+  name: Tion Climate Control
+  description: Controls a Tion climate device based on fan speed, HVAC mode, and temperature sensors.
+  domain: automation
+
+  input:
+    climate_device:
+      name: Climate Device
+      selector:
+        entity:
+          domain: climate
+
+    fan_speed_sensor:
+      name: Fan Speed Sensor
+      selector:
+        entity:
+          domain: sensor
+
+    hvac_mode_sensor:
+      name: HVAC Mode Sensor
+      selector:
+        entity:
+          domain: sensor
+
+    temperature_sensor:
+      name: Temperature Sensor
+      selector:
+        entity:
+          domain: sensor
+
+    house_occupancy:
+      name: House occupancy
+      selector:
+        entity:
+          domain: sensor
+
+trigger:
+  - platform: state
+    entity_id: !input fan_speed_sensor
+    to: "0"
+    id: fan_speed_off
+
+  - platform: state
+    entity_id: !input fan_speed_sensor
+    to: ["1", "2", "3", "4"]
+    id: fan_speed_change
+
+  - platform: state
+    entity_id: !input temperature_sensor
+    id: temperature_change
+
+  - platform: state
+    entity_id: !input hvac_mode_sensor
+    id: hvac_mode_change
+
+variables:
+  climate_device_entity: !input climate_device
+  fan_speed_sensor_entity: !input fan_speed_sensor
+  temperature_sensor_entity: !input temperature_sensor
+  hvac_mode_sensor_entity: !input hvac_mode_sensor
+  house_occupancy_entity: !input house_occupancy
+
+action:
+  - choose:
+      - conditions: "{{ trigger.id == 'fan_speed_change' }}"
+        sequence:
+          # turn on if someone at home and it's off
+          - if:
+              - "{{ is_state(house_occupancy_entity, 'on') }}"
+              - "{{ is_state(climate_device_entity, 'off') }}"
+            then:
+              - delay: "{{ range(1, 3) | random }}"
+
+              - service: climate.set_temperature
+                target:
+                  entity_id: !input climate_device
+                data:
+                  hvac_mode: "{{ states(hvac_mode_sensor_entity) }}"
+                  temperature: "{{ states(temperature_sensor_entity) }}"
+
+          # update fan speed if different
+          - if:
+              - "{{ state_attr(climate_device_entity, 'fan_mode') != states(fan_speed_sensor_entity) }}"
+            then:
+              - delay: "{{ range(1, 3) | random }}"
+
+              - service: climate.set_fan_mode
+                entity_id: !input climate_device
+                data:
+                  fan_mode: "{{ states(fan_speed_sensor_entity) }}"
+
+      - conditions: "{{ trigger.id == 'fan_speed_off' }}"
+        sequence:
+          - if:
+              - "{{ is_state(climate_device_entity, ['heat', 'fan_only']) }}"
+            then:
+              - delay: "{{ range(1, 3) | random }}"
+
+              - service: climate.turn_off
+                target:
+                  entity_id: !input climate_device
+
+      - conditions: "{{ trigger.id in ['temperature_change', 'hvac_mode_change'] }}"
+        sequence:
+          - if:
+              - "{{ is_state(climate_device_entity, ['heat', 'fan_only']) }}"
+            then:
+              - delay: "{{ range(1, 3) | random }}"
+
+              - service: climate.set_temperature
+                target:
+                  entity_id: !input climate_device
+                data:
+                  hvac_mode: "{{ states(hvac_mode_sensor_entity) }}"
+                  temperature: "{{ states(temperature_sensor_entity) }}"

@@ -1,8 +1,5 @@
 ---
-
-
 light:
-
   - platform: switch
     name: Bedroom Light Main
     entity_id: switch.house_bedroom_light_1
@@ -30,3 +27,31 @@ light:
       - light.bedroom_light_left
       - light.bedroom_light_right
 
+sensor:
+  - platform: derivative
+    source: sensor.bedroom_air_co2
+    name: co2_derivative
+    round: 1
+    unit_time: min
+    time_window: "00:05:00"
+
+template:
+  - sensor:
+      - unique_id: sensor.bedroom_tion_target_fan_speed
+        name: "Bedroom Tion - Target fan speed"
+        icon: mdi:fan-auto
+        state: >
+          {% from "tion.jinja" import calculate_tion_fan_speed %}
+          {{ calculate_tion_fan_speed('sensor.bedroom_air_co2', 550, 650, 700, 750) | trim }}
+
+automation:
+  - id: bedroom_tion_blueprint
+    alias: "Bedroom - Tion Climate Control"
+    use_blueprint:
+      path: timurvafin/tion.yaml
+      input:
+        house_occupancy: binary_sensor.house_occupancy
+        climate_device: climate.tion_bedroom
+        fan_speed_sensor: sensor.bedroom_tion_target_fan_speed
+        hvac_mode_sensor: sensor.tion_target_hvac_mode
+        temperature_sensor: sensor.tion_target_temperature

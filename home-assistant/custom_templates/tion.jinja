@@ -1,0 +1,6 @@
+{% macro calculate_tion_fan_speed(co2_sensor_entity, co2_limit1=None, co2_limit2=None, co2_limit3=None, co2_limit4=None, co2_limit5=None, co2_limit6=None) %}
+  {% set co2 = states(co2_sensor_entity) | int(0) %}
+  {% set fan_speeds = [ co2_limit1, co2_limit2, co2_limit3, co2_limit4, co2_limit5, co2_limit6 ] %}
+
+  {{ fan_speeds | reject('equalto', None) | select('lt', co2) | list | length }}
+{% endmacro %}

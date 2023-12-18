@@ -1,5 +1,22 @@
 ---
 
-#tion:
-#  username: !secret tion_email
-#  password: !secret tion_password
+template:
+  sensor:
+    - unique_id: sensor.tion_target_temperature
+      name: "Tion - Target temperature"
+      unit_of_measurement: "°C"
+      icon: mdi:temperature-celsius
+      state: >
+        {% set outside_temperature = states('sensor.zont_outside_temperature') | float(0) %}
+        {{ 19 if outside_temperature < 0 else 0 }}
+
+    - unique_id: sensor.tion_target_hvac_mode
+      name: "Tion - Target HVAC mode"
+      icon: mdi:hvac
+      state: >
+        {% set target_temperature = states('sensor.tion_target_temperature') | int(0) %}
+        {{ 'heat' if target_temperature > 0 else 'fan_only' }}
+
+tion:
+ username: !secret tion_email
+ password: !secret tion_password
