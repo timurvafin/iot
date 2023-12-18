@@ -83,14 +83,13 @@ services:
       - PUID
       - PGID
     network_mode: host
-    privileged: true  
+    privileged: true
     labels:
       - traefik.enable=true
       - traefik.http.routers.home-assistant.entrypoints=websecure
       - traefik.http.routers.home-assistant.rule=Host(`ha.dacha.vafin.ru`)
       - traefik.http.routers.home-assistant.tls.certresolver=letsencrypt
       - traefik.http.services.home-assistant.loadbalancer.server.port=8123
-
 
   home-assistant-configurator:
     image: causticlab/hass-configurator-docker:arm64
@@ -110,7 +109,7 @@ services:
   mosquitto:
     image: eclipse-mosquitto:latest
     restart: always
-    #network_mode: host  
+    #network_mode: host
     volumes:
       - ./mosquitto:/mosquitto
     ports:
@@ -121,15 +120,14 @@ services:
       - PUID
       - PGID
 
-
   zigbee2mqtt:
     image: koenkk/zigbee2mqtt:latest
-    restart: always  
+    restart: always
     depends_on:
       - mosquitto
       - reverse-proxy
-    #network_mode: host  
-    privileged: true  
+    #network_mode: host
+    privileged: true
     volumes:
       - ./zigbee2mqtt:/app/data
       - /run/udev:/run/udev:ro
@@ -139,7 +137,7 @@ services:
     environment:
       - TZ
       - PUID
-      - PGID    
+      - PGID
       #- DEBUG=zigbee-herdsman*
     ports:
       - 8381:8381
@@ -152,7 +150,7 @@ services:
 
   homer:
     image: b4bz/homer
-    restart: always  
+    restart: always
     depends_on:
       - reverse-proxy
     volumes:
@@ -169,7 +167,6 @@ services:
       - traefik.http.routers.homer.rule=Host(`dacha.vafin.ru`)
       - traefik.http.routers.homer.tls.certresolver=letsencrypt
       - traefik.http.services.homer.loadbalancer.server.port=8080
-
 
   transmission-openvpn:
     image: haugene/transmission-openvpn
@@ -207,7 +204,6 @@ services:
       - traefik.http.routers.transmission-openvpn.tls.certresolver=letsencrypt
       - traefik.http.services.transmission-openvpn.loadbalancer.server.port=9091
 
-
   plex:
     image: lscr.io/linuxserver/plex:latest
     restart: unless-stopped
@@ -223,8 +219,6 @@ services:
       - /home/timurv/media/tv:/tv
       - /home/timurv/media/movies:/movies
 
-
-
   glances:
     image: nicolargo/glances:latest
     restart: unless-stopped
@@ -238,7 +232,7 @@ services:
     environment:
       - TZ
       - PUID
-      - PGID    
+      - PGID
       - GLANCES_OPT=-C /config/glances.conf -w
     labels:
       - traefik.enable=true
@@ -247,6 +241,27 @@ services:
       - traefik.http.routers.glances.tls.certresolver=letsencrypt
       - traefik.http.services.glances.loadbalancer.server.port=61208
 
+  esphome:
+    container_name: esphome
+    image: ghcr.io/esphome/esphome
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    environment:
+      - TZ
+      - PUID
+      - PGID
+      - ESPHOME_DASHBOARD_USE_PING=true
+    volumes:
+      - ./esphome/config:/config
+      - ./esphome/cache:/cache
+      - /etc/localtime:/etc/localtime:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.esphome.entrypoints=websecure
+      - traefik.http.routers.esphome.rule=Host(`esphome.dacha.vafin.ru`)
+      - traefik.http.routers.esphome.tls.certresolver=letsencrypt
+      - traefik.http.services.esphome.loadbalancer.server.port=6052
 
 volumes:
   portainer_data:

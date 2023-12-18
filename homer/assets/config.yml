@@ -24,22 +24,22 @@ services:
       - name: "Huawei"
         icon: "fas fa-sim-card"
         url: "http://192.168.8.1/"
-      
+
       - name: "TP Link"
         icon: "far fa-hdd"
         url: "http://192.168.0.254/"
-      
+
       - name: "Unifi"
         icon: "fas fa-network-wired"
         url: "https://192.168.1.15/"
-      
+
   - name: "Docker"
     icon: "fab fa-docker"
     items:
       - name: "Traefik"
         icon: "fas fa-stream"
         url: "https://proxy.dacha.vafin.ru/"
-      
+
       - name: "Portainer"
         icon: "fab fa-docker"
         url: "https://portainer.dacha.vafin.ru/"
@@ -47,29 +47,32 @@ services:
   - name: "IoT"
     icon: "fas fa-laptop-house"
     items:
-      
+
       - name: "Home Assistant"
         icon: "fas fa-laptop-house"
         url: "https://ha.dacha.vafin.ru/"
-      
+
       - name: "HASS Configurator"
         icon: "fas fa-cog"
         url: "https://hac.dacha.vafin.ru/"
-      
+
       - name: "Zigbee2mqtt"
         icon: "fas fa-database"
         url: "https://zigbee2mqtt.dacha.vafin.ru/"
-      
+
+      - name: "ESPHome"
+        icon: "fas fa-microchip"
+        url: "https://esphome.dacha.vafin.ru/"
+
 
   - name: "Media"
     icon: "fas fa-photo-video"
     items:
-      
+
       - name: "Transmission"
         icon: "fa-solid fa-download"
         url: "https://transmission.dacha.vafin.ru/"
-      
+
       - name: "Plex"
         icon: "fa fa-film"
         url: "https://app.plex.tv/"
-      
