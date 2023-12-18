@@ -77,3 +77,4 @@ script:
             video:
                - file: "{{ video_file }}"
                  caption: "{{ device_name }}"
+                 timeout: 240

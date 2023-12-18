@@ -13,12 +13,25 @@ light:
     entity_id: switch.house_livingroom_light_1_l2
 
   - platform: group
+    name: "Livingroom bulbs"
+    unique_id: livingroom_bulbs
+    entities:
+      - light.house_livingroom_bulb_1
+      - light.house_livingroom_bulb_2
+
+  - platform: group
     name: "Livingroom All Lights"
     unique_id: livingroom_all_lights
     entities:
       - light.livingroom_light_1
       - light.livingroom_light_2
 
+
+template:
+  - sensor:
+    - name: "Livingroom Alice state"
+      unique_id: "livingroom_alice_state"
+      state: "{{ state_attr('media_player.yandex_station_940050344110281f098b', 'alice_state') }}"
 
 script:
 
@@ -67,7 +80,7 @@ script:
 automation:
 
   - id: livingroom_lights_on_off_on_movie
-    alias: Livingroom - Turn on off lights on Movie
+    alias: Livingroom Lights - Turn on off lights on Movie
     use_blueprint:
       path: Blackshome/sensor-light-add-on.yaml
       input:
@@ -81,7 +94,7 @@ automation:
           - standby
           - "off"
 
-        include_sun: sun_enabled     
+        include_sun: sun_enabled
         include_start_turn_off: enable_start_turn_off
         include_end_turn_on: enable_end_turn_on
 
@@ -94,9 +107,7 @@ automation:
             - light.corridor_light
 
         light_switch:
-          entity_id: 
+          entity_id:
 
         end_light_switch:
           entity_id: light.livingroom_light_1
-
-

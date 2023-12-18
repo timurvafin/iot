@@ -1,8 +1,39 @@
 ---
+input_boolean:
+  house_guest_mode:
+    name: When Guests are at home
+    icon: mdi:account-group
+    initial: false
 
+template:
+  - binary_sensor:
+      - unique_id: binary_sensor.house_occupancy
+        name: "House - Occupancy"
+        device_class: "occupancy"
+        state: >
+          {{ is_state('person.timur', 'home') or is_state('input_boolean.house_guest_mode', 'on') }}
+        attributes:
+          timur_home: "{{ is_state('person.timur', 'home') }}"
+          guests_home: "{{ is_state('input_boolean.house_guest_mode', 'on') }}"
+
+input_button:
+  house_button_going_to_leave_home:
+    name: Going to Leave Home
+    icon: mdi:home-export-outline
+
+  house_button_leave_home:
+    name: Leave Home
+    icon: mdi:home-export-outline
+
+  house_button_came_home:
+    name: Came Home
+    icon: mdi:home-import-outline
+
+  house_button_going_to_sleep:
+    name: Going to Sleep
+    icon: mdi:chat-sleep-outline
 
 light:
-
   - platform: switch
     name: Hall Light
     entity_id: switch.house_hall_light_1
@@ -54,9 +85,7 @@ light:
       - light.terrasse_all_lights
       - light.shed_all_lights
 
-
 script:
-
   coming_home:
     alias: "Coming Home"
     sequence:
@@ -71,7 +100,6 @@ script:
 
       - service: script.play_music
 
-
   leaving_home:
     alias: "Leaving Home"
     sequence:
@@ -80,14 +108,13 @@ script:
 
       - service: script.pause_music
 
-
   going_to_leave_home:
     alias: "Going to Leave Home"
     sequence:
       - service: media_player.play_media
         entity_id: media_player.yandex_station_940050344110281f098b
         data:
-          media_content_id: 'Хорошо, расскажу про погоду'
+          media_content_id: "Хорошо, расскажу про погоду"
           media_content_type: text
 
       - delay: 3
@@ -95,7 +122,7 @@ script:
       - service: media_player.play_media
         entity_id: media_player.yandex_station_940050344110281f098b
         data:
-          media_content_id: 'Какая погода в Казани?'
+          media_content_id: "Какая погода в Казани?"
           media_content_type: command
 
       - delay: 13
@@ -103,7 +130,7 @@ script:
       - service: media_player.play_media
         entity_id: media_player.yandex_station_940050344110281f098b
         data:
-          media_content_id: 'Про дорогу'
+          media_content_id: "Про дорогу"
           media_content_type: text
 
       - delay: 3
@@ -111,9 +138,8 @@ script:
       - service: media_player.play_media
         entity_id: media_player.yandex_station_940050344110281f098b
         data:
-          media_content_id: 'Сколько ехать на машине до Казани?'
+          media_content_id: "Сколько ехать на машине до Казани?"
           media_content_type: command
-
 
   going_to_sleep:
     alias: "Going to Sleep"
@@ -142,43 +168,51 @@ script:
             - light.shed_all_lights
             - light.garden_back_near_light
 
-
-input_button:
-
-  house_button_going_to_leave_home:
-    name: Going to Leave Home
-    icon: mdi:home-export-outline
-
-  house_button_leave_home:
-    name: Leave Home
-    icon: mdi:home-export-outline
-
-  house_button_came_home:
-    name: Came Home
-    icon: mdi:home-import-outline
-
-  house_button_going_to_sleep:
-    name: Going to Sleep
-    icon: mdi:chat-sleep-outline
-
-
 automation:
+  - id: house_hall_light_turn_off_no_movment
+    alias: "House Hall Lights – Turn off Hall light without movement"
+
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.house_hall_sensor_occupancy
+        to: "off"
+        for:
+          minutes: 10
+
+    condition:
+      - condition: state
+        entity_id: light.hall_light
+        state: "on"
+
+    action:
+      - service: light.turn_off
+        entity_id: light.hall_light
+
+      - service: script.automation_notification
+        data:
+          message: "House Light – Turned off at morning."
+
+      - service: script.automation_notification
+        data:
+          message: "House Hall Light: Turned off without movement."
+
   - id: house_lights_turn_off_presence_off
     alias: "House Lights – Turn off all lights when nobody at home"
+
     trigger:
       platform: state
-      entity_id: group.people
-      from: "home"
-      to: "not_home"
+      entity_id: binary_sensor.house_occupancy
+      from: "on"
+      to: "off"
       for:
         minutes: 10
+
     action:
       - service: script.leaving_home
 
       - service: script.automation_notification
         data:
           message: "House Lights: Turned off all lights."
-
 
   - id: house_action_coming_home
     alias: "House Action - Coming Home"
@@ -192,7 +226,6 @@ automation:
         data:
           message: "Coming home: Turned on lights and music."
 
-
   - id: house_action_leaving_home
     alias: "House Action - Leaving Home"
     trigger:
@@ -205,7 +238,6 @@ automation:
         data:
           message: "Leaving home: Turned off lights and music."
 
-
   - id: house_action_going_to_leave_home
     alias: "House Action - Going To Leaving Home"
     trigger:
@@ -217,7 +249,6 @@ automation:
       - service: script.automation_notification
         data:
           message: "Going to leave home."
-
 
   - id: house_action_going_to_sleep
     alias: "House Action - Going To Sleep"

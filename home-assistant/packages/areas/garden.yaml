@@ -68,7 +68,6 @@ light:
     entities:
       - light.garden_front_lights
       - light.garden_back_lights
-      - light.bbq_light
 
 automation:
 

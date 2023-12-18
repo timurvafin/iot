@@ -1,14 +1,12 @@
 ---
-
 light:
   - platform: switch
     name: Boilerroom Light
     entity_id: switch.house_boilerroom_light_1
 
 script:
-
   boilerroom_heater_set_mode:
-    alias: "Boilerroom heater - Set Heater mode"
+    alias: "Boilerroom Heater - Set Heater mode"
 
     fields:
       mode:
@@ -21,118 +19,134 @@ script:
         data:
           option: "{{ mode }}"
 
-
   boilerroom_heater_eco_mode:
-    alias: "Boilerroom heater - Turn on Eco mode"
+    alias: "Boilerroom Heater - Turn on Eco mode"
     sequence:
       - service: script.boilerroom_heater_set_mode
         data:
           mode: "Эконом"
 
   boilerroom_heater_comfort_mode:
-    alias: "Boilerroom heater - Turn on Comfort mode"
+    alias: "Boilerroom Heater - Turn on Comfort mode"
     sequence:
       - service: script.boilerroom_heater_set_mode
         data:
           mode: "Комфорт"
 
   boilerroom_heater_boiling_mode:
-    alias: "Boilerroom heater - Turn on Boiling mode"
+    alias: "Boilerroom Heater - Turn on Boiling mode"
     sequence:
       - service: script.boilerroom_heater_set_mode
         data:
           mode: "Кипячение"
 
-
 automation:
-
   - id: boilerroom_heater_presence_off
-    alias: "Heater – Turn on Eco mode when nobody at home"
+    alias: "Boilerroom Heater – Turn on Eco mode when nobody at home"
+
     trigger:
       platform: state
-      entity_id: group.people
-      from: "home"
-      to: "not_home"
+      entity_id: binary_sensor.house_occupancy
+      from: "on"
+      to: "off"
       for:
         minutes: 30
+
     action:
       - service: script.boilerroom_heater_eco_mode
       - service: script.automation_notification
         data:
-          message: "Heater: Turn on Eco mode when nobody at home"
+          message: "Boilerroom Heater: Turn on Eco mode when nobody at home"
 
   - id: boilerroom_heater_presence_on
-    alias: "Heater – Turn on Comfort mode when somebody at home"
+    alias: "Boilerroom Heater – Turn on Comfort mode when somebody at home"
+
     trigger:
       platform: state
-      entity_id: group.people
-      from: "not_home"
-      to: "home"
+      entity_id: binary_sensor.house_occupancy
+      from: "off"
+      to: "on"
+
     condition:
       condition: time
       after: "08:00:00"
       before: "00:00:00"
+
     action:
       - service: script.boilerroom_heater_comfort_mode
       - service: script.automation_notification
         data:
-          message: "Heater: Turn on Comfort mode when somebody at home"
+          message: "Boilerroom Heater: Turn on Comfort mode when somebody at home"
 
   - id: boilerroom_heater_time_off
-    alias: "Heater – Turn on Eco mode at night"
+    alias: "Boilerroom Heater – Turn on Eco mode at night"
+
     trigger:
       platform: time
       at: "02:00:00"
+
     condition:
       condition: state
-      entity_id: group.people
-      state: "home"
+      entity_id: binary_sensor.house_occupancy
+      state: "on"
+
     action:
       - service: script.boilerroom_heater_eco_mode
       - service: script.automation_notification
         data:
-          message: "Heater: Turn on Eco mode at night"
+          message: "Boilerroom Heater: Turn on Eco mode at night"
 
   - id: boilerroom_heater_time_on
-    alias: "Heater – Turn on Comfort mode at morning"
+    alias: "Boilerroom Heater – Turn on Comfort mode at morning"
+
     trigger:
-      at: "6:00:00"
+      at: "06:00:00"
       platform: time
+
     condition:
       condition: state
-      entity_id: group.people
-      state: "home"
+      entity_id: binary_sensor.house_occupancy
+      state: "on"
+
     action:
       - service: script.boilerroom_heater_comfort_mode
       - service: script.automation_notification
         data:
-          message: "Heater: Turn on Comfort mode when at morning"
+          message: "Boilerroom Heater: Turn on Comfort mode when at morning"
 
   - id: boilerroom_heater_boiling
-    alias: "Heater - Turn on Boiling mode"
+    alias: "Boilerroom Heater - Turn on Boiling mode"
+
     trigger:
       - platform: numeric_state
         entity_id: sensor.zont_boiler_actual_temperature
         below: 60
         for:
           days: 3
+
     condition:
       - condition: state
         entity_id: script.boilerroom_heater_boiling_mode
-        state: 'off'
+        state: "off"
+
     action:
       - service: script.boilerroom_heater_boiling_mode
+
       - service: script.automation_notification
         data:
-          message: "Heater Boiling: Turn on Boiling after 3 days of cold"
+          message: "Boilerroom Heater Boiling: Turn on Boiling after 3 days of cold"
+
       - wait_for_trigger:
           - platform: numeric_state
             entity_id: sensor.zont_boiler_actual_temperature
             above: 59
+
       - delay:
           minutes: 15
+
       - service: script.boilerroom_heater_eco_mode
         entity_id:
+
       - service: script.automation_notification
         data:
-          message: "Heater Boiling: Turn on Eco mode"
+          message: "Boilerroom Heater Boiling: Turn on Eco mode"

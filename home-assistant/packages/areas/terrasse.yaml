@@ -64,7 +64,7 @@ automation:
 
 
   - id: terrasse_motion_notification
-    alias: "Terrasse - UniFi Protect Motion Notification"
+    alias: "Terrasse Unifi - UniFi Protect Motion Notification"
 
     trigger:
       - platform: state
