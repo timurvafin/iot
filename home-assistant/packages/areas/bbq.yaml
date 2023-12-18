@@ -5,3 +5,25 @@ light:
   - platform: switch
     name: "BBQ light"
     entity_id: switch.garden_bbq_light_1
+
+automation:
+
+  - id: bbq_lights_turn_off_at_night
+    alias: "BBQ lights – Turn off at morning"
+
+    trigger:
+      - platform: sun
+        event: sunrise
+
+    condition:
+      - condition: state
+        entity_id: light.bbq_light
+        state: "on"
+
+    action:
+      - service: light.turn_off
+        entity_id: light.bbq_light
+
+      - service: script.automation_notification
+        data:
+          message: "BBQ Light – Turned off at morning."
