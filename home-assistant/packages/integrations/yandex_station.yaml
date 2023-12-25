@@ -1,4 +1,49 @@
+---
 yandex_station:
   media_players:
     - entity_id: media_player.sonos
       name: Sonos
+
+script:
+  play_music:
+    alias: "House - Play Music"
+    sequence:
+      # choose Sonos for living room
+      - service: media_player.select_source
+        target:
+          entity_id: media_player.livingroom_yandex_station
+        data:
+          source: Sonos
+
+      # start playing
+      - service: media_player.play_media
+        target:
+          entity_id: media_player.livingroom_yandex_station
+        data:
+          media_content_id: Включи мою волну
+          media_content_type: command
+
+      - delay: 1
+
+      # set volume for Sonos
+      - service: media_player.volume_set
+        entity_id: media_player.sonos
+        data:
+          volume_level: 0.12
+
+      # mute livingroom
+      - service: media_player.volume_set
+        target:
+          entity_id: media_player.livingroom_yandex_station
+        data:
+          volume_level: 0
+
+  pause_music:
+    alias: "House - Pause Music"
+    sequence:
+      - service: media_player.media_pause
+        target:
+          entity_id:
+            - media_player.livingroom_yandex_station
+            - media_player.bathroom_yandex_station
+            - media_player.bathroom_yandex_station

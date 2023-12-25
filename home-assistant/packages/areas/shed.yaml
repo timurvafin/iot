@@ -1,9 +1,7 @@
 ---
-
 ### Shed ###
 
 light:
-
   - platform: switch
     name: "Shed light 1"
     entity_id: switch.shed_light_1
@@ -19,10 +17,7 @@ light:
       - light.shed_light_1
       - light.shed_light_2
 
-
-
 script:
-
   start_volvo:
     alias: "Volvo - Start Volvo"
 
@@ -32,7 +27,7 @@ script:
         state: "home"
 
       - service: media_player.play_media
-        entity_id: media_player.yandex_station_940050344110281f098b
+        entity_id: media_player.livingroom_yandex_station
         data:
           media_content_id: "Завожу машину"
           media_content_type: text
@@ -48,14 +43,12 @@ script:
       - wait_template: "{{ is_state('switch.yv1lf08acl1611992_engine', 'on') }}"
 
       - service: media_player.play_media
-        entity_id: media_player.yandex_station_940050344110281f098b
+        entity_id: media_player.livingroom_yandex_station
         data:
           media_content_id: "Машина запущена"
           media_content_type: text
 
-
 automation:
-
   - id: shed_light_on_motion
     alias: Shed Lights - Turn on shed light on motion
     use_blueprint:

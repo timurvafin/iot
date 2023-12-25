@@ -1,9 +1,7 @@
 ---
-
 ### Livingroom ###
 
 light:
-
   - platform: switch
     name: Livingroom Light 1
     entity_id: switch.house_livingroom_light_1_l1
@@ -26,61 +24,81 @@ light:
       - light.livingroom_light_1
       - light.livingroom_light_2
 
-
 template:
   - sensor:
-    - name: "Livingroom Alice state"
-      unique_id: "livingroom_alice_state"
-      state: "{{ state_attr('media_player.yandex_station_940050344110281f098b', 'alice_state') }}"
+      - unique_id: "livingroom_alice_state"
+        name: "Livingroom Alice state"
+        state: "{{ state_attr('media_player.livingroom_yandex_station', 'alice_state') }}"
 
-script:
-
-  play_music:
-    alias: "Play Music"
-    sequence:
-      # choose Sonos for living room
-      - service: media_player.select_source
-        entity_id: media_player.yandex_station_940050344110281f098b
-        data:
-          source: Sonos
-
-      # start playing
-      - service: media_player.media_play
-        entity_id: media_player.yandex_station_940050344110281f098b
-
-      - delay: 1
-
-      # set volume for Sonos
-      - service: media_player.volume_set
-        entity_id: media_player.sonos
-        data:
-          volume_level: 0.12
-
-      # mute livingroom
-      - service: media_player.volume_set
-        entity_id: media_player.yandex_station_940050344110281f098b
-        data:
-          volume_level: 0
-
-      # set volume for bathroom and bedroom
-      - service: media_player.volume_set
-        entity_id:
-          - media_player.yandex_station_mg00000000000006466000003faec0e2
-          - media_player.yandex_station_mg0000000000000074080000d1f21183
-        data:
-          volume_level: 0.2
-
-  pause_music:
-    alias: "Pause Music"
-    sequence:
-      - service: media_player.media_pause
-        entity_id: media_player.yandex_station_940050344110281f098b
-
+      - unique_id: sensor.livingroom_tion_target_fan_speed
+        name: "Livingroom Tion - Target fan speed"
+        icon: mdi:fan-auto
+        state: >
+          {% from "tion.jinja" import calculate_tion_fan_speed %}
+          {{ calculate_tion_fan_speed('sensor.livingroom_co2', 700, 750, 800, 900) | trim }}
 
 automation:
+  - id: livingroom_vacuum_start_cleaning
+    alias: "Livingroom Vacuum - Start cleaning when no one is home"
+
+    trigger:
+      - platform: time
+        at: input_datetime.vacuum_cleaning_time
+
+    condition:
+      - condition: state
+        entity_id: binary_sensor.house_occupancy
+        state: "off"
+
+      - condition: state
+        entity_id: vacuum.dreamebot_z10_pro
+        state: "docked"
+
+    action:
+      - service: vacuum.start
+        entity_id: vacuum.dreamebot_z10_pro
+
+      - service: script.automation_notification
+        data:
+          message: "🧹 Vacuum: Started cleaning as no one is home."
+
+  - id: livingroom_vacuum_stop_cleaning
+    alias: "Livingroom Vacuum - Stop cleaning when someone comes home"
+
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.house_occupancy
+        to: "on"
+
+    condition:
+      - condition: state
+        entity_id: vacuum.dreamebot_z10_pro
+        state: "cleaning"
+
+    action:
+      - service: vacuum.return_to_base
+        entity_id: vacuum.dreamebot_z10_pro
+
+      - service: script.automation_notification
+        data:
+          message: "🧹 Vacuum: Stopped cleaning as someone came home."
+
+  - id: livingroom_vacuum_finished
+    alias: "Livingroom Vacuum - Finished cleaning notification"
+
+    trigger:
+      - platform: state
+        entity_id: vacuum.dreamebot_z10_pro
+        to: "docked"
+
+    action:
+      - service: script.automation_notification
+        data:
+          message: "🧹 Vacuum: Finished cleaning with state '{{ states('vacuum.dreamebot_z10_pro') }}'"
 
   - id: livingroom_lights_on_off_on_movie
     alias: Livingroom Lights - Turn on off lights on Movie
+
     use_blueprint:
       path: Blackshome/sensor-light-add-on.yaml
       input:
@@ -111,3 +129,14 @@ automation:
 
         end_light_switch:
           entity_id: light.livingroom_light_1
+
+  - id: livingroom_tion
+    alias: "Livingroom - Tion Climate Control"
+    use_blueprint:
+      path: timurvafin/tion.yaml
+      input:
+        house_occupancy: binary_sensor.house_occupancy
+        climate_device: climate.tion_livingroom
+        fan_speed_sensor: sensor.livingroom_tion_target_fan_speed
+        hvac_mode_sensor: sensor.tion_target_hvac_mode
+        temperature_sensor: sensor.tion_target_temperature

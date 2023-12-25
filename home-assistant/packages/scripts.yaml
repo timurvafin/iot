@@ -1,7 +1,5 @@
 ---
-
 script:
-
   automation_notification:
     alias: "Script - Send automation notification"
 
@@ -13,7 +11,7 @@ script:
     sequence:
       - service: notify.telegram
         data:
-          title: "Automation triggered 🤖"
+          title: "🤖 Automation triggered"
           message: "{{ message }}"
 
   turn_on_lights_after_sunsent:

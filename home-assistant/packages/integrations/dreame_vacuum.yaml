@@ -1,0 +1,9 @@
+---
+## Dreame Vacuum ##
+
+input_datetime:
+  vacuum_cleaning_time:
+    name: "Cleaning Start Time"
+    has_date: false
+    has_time: true
+    initial: "17:00"

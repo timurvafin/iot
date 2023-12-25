@@ -1,9 +1,7 @@
 ---
-
 ### Terrasse ###
 
 light:
-
   - platform: switch
     name: "Terrasse side light"
     entity_id: switch.terrasse_light_1
@@ -26,10 +24,8 @@ light:
       - light.terrasse_all_lights
       - light.shed_all_lights
 
-
 automation:
-
-  - id: terrasse_turn_off_at_night
+  - id: terrasse_light_turn_off_at_night
     alias: "Terrasse Lights – Turn off at night"
     trigger:
       - platform: time
@@ -42,7 +38,6 @@ automation:
       - service: script.automation_notification
         data:
           message: "Terrasse Lights – Turned off at night."
-
 
   - id: terrasse_light_turn_on_at_evening
     alias: "Terrasse Lights – Turn on at evening"
@@ -61,7 +56,6 @@ automation:
       - service: script.automation_notification
         data:
           message: "Terrasse Lights – Turned on at evening."
-
 
   - id: terrasse_motion_notification
     alias: "Terrasse Unifi - UniFi Protect Motion Notification"

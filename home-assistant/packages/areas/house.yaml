@@ -87,7 +87,7 @@ light:
 
 script:
   coming_home:
-    alias: "Coming Home"
+    alias: "House - Coming Home"
     sequence:
       - service: script.turn_on_lights_after_sunsent
         data:
@@ -101,18 +101,19 @@ script:
       - service: script.play_music
 
   leaving_home:
-    alias: "Leaving Home"
+    alias: "House - Leaving Home"
     sequence:
       - service: light.turn_off
         entity_id: light.house_all_lights
 
       - service: script.pause_music
+      - service: script.turn_off_all_climate_devices
 
   going_to_leave_home:
-    alias: "Going to Leave Home"
+    alias: "House - Going to Leave Home"
     sequence:
       - service: media_player.play_media
-        entity_id: media_player.yandex_station_940050344110281f098b
+        entity_id: media_player.livingroom_yandex_station
         data:
           media_content_id: "Хорошо, расскажу про погоду"
           media_content_type: text
@@ -120,7 +121,7 @@ script:
       - delay: 3
 
       - service: media_player.play_media
-        entity_id: media_player.yandex_station_940050344110281f098b
+        entity_id: media_player.livingroom_yandex_station
         data:
           media_content_id: "Какая погода в Казани?"
           media_content_type: command
@@ -128,7 +129,7 @@ script:
       - delay: 13
 
       - service: media_player.play_media
-        entity_id: media_player.yandex_station_940050344110281f098b
+        entity_id: media_player.livingroom_yandex_station
         data:
           media_content_id: "Про дорогу"
           media_content_type: text
@@ -136,13 +137,13 @@ script:
       - delay: 3
 
       - service: media_player.play_media
-        entity_id: media_player.yandex_station_940050344110281f098b
+        entity_id: media_player.livingroom_yandex_station
         data:
           media_content_id: "Сколько ехать на машине до Казани?"
           media_content_type: command
 
   going_to_sleep:
-    alias: "Going to Sleep"
+    alias: "House - Going to Sleep"
     sequence:
       - service: script.turn_on_lights_after_sunsent
         data:
@@ -196,8 +197,8 @@ automation:
         data:
           message: "House Hall Light: Turned off without movement."
 
-  - id: house_lights_turn_off_presence_off
-    alias: "House Lights – Turn off all lights when nobody at home"
+  - id: house_living_home
+    alias: "House – Living home"
 
     trigger:
       platform: state
@@ -214,50 +215,18 @@ automation:
         data:
           message: "House Lights: Turned off all lights."
 
-  - id: house_action_coming_home
-    alias: "House Action - Coming Home"
+  - id: house_coming_home
+    alias: "House - Coming Home"
+
     trigger:
       - platform: state
-        entity_id: input_button.house_button_came_home
+        entity_id: binary_sensor.house_occupancy
+        from: "off"
+        to: "on"
+
     action:
       - service: script.coming_home
 
       - service: script.automation_notification
         data:
           message: "Coming home: Turned on lights and music."
-
-  - id: house_action_leaving_home
-    alias: "House Action - Leaving Home"
-    trigger:
-      - platform: state
-        entity_id: input_button.house_button_leave_home
-    action:
-      - service: script.leaving_home
-
-      - service: script.automation_notification
-        data:
-          message: "Leaving home: Turned off lights and music."
-
-  - id: house_action_going_to_leave_home
-    alias: "House Action - Going To Leaving Home"
-    trigger:
-      - platform: state
-        entity_id: input_button.house_button_going_to_leave_home
-    action:
-      - service: script.going_to_leave_home
-
-      - service: script.automation_notification
-        data:
-          message: "Going to leave home."
-
-  - id: house_action_going_to_sleep
-    alias: "House Action - Going To Sleep"
-    trigger:
-      - platform: state
-        entity_id: input_button.house_button_going_to_sleep
-    action:
-      - service: script.going_to_sleep
-
-      - service: script.automation_notification
-        data:
-          message: "Going to Sleep: Turned on lights."
