@@ -1,2 +1,0 @@
-# Run every 15 minutes
-*/15 * * * * abc /bin/sh /config/ddns.sh

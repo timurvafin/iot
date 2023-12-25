@@ -263,5 +263,16 @@ services:
       - traefik.http.routers.esphome.tls.certresolver=letsencrypt
       - traefik.http.services.esphome.loadbalancer.server.port=6052
 
+  ddns:
+    image: ghcr.io/timurvafin/ddns:latest
+    restart: unless-stopped
+    environment:
+      - TZ
+      - PUID
+      - PGID
+      - TOKEN=${DNSIMPLE_HORSE_TOKEN}
+      - ACCOUNT_ID=${DNSIMPLE_ACCOUNT_ID}
+      - HOSTNAME=${DNSIMPLE_HOSTNAME}
+
 volumes:
   portainer_data:
