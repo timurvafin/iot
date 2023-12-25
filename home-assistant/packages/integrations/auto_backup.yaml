@@ -1,0 +1,6 @@
+---
+automation:
+  - alias: Automatic Backups
+
+    use_blueprint:
+      path: jcwillox/automatic_backups.yaml
